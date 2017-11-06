@@ -1,0 +1,21 @@
+{
+  "name": "eazy-auth",
+  "version": "0.0.1",
+  "description": "Easy auth for react + redux + saga + routerV4",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rimraf lib",
+    "build": "babel src --out-dir lib",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "rimraf": "^2.6.2"
+  }
+}
