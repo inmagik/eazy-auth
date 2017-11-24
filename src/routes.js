@@ -45,7 +45,9 @@ export const AuthRoute = connect(({ auth }) => ({ auth }))(({
         <Redirect
           to={{
             pathname: redirectTo,
-            state: rememberReferrer ? { referrer: props.location } : undefined,
+            state: (rememberReferrer && !auth.logoutFromPermission)
+              ? { referrer: props.location }
+              : undefined,
           }}
         />
       )

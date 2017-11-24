@@ -22,8 +22,11 @@ export const AUTH_WITH_TOKEN_SUCCESS = `${NS}AUTH_WITH_TOKEN_SUCCESS`
 
 export const LOGOUT = `${NS}LOGOUT`
 
-export const logout = () => ({
+export const logout = (options = { fromPermission: false }) => ({
   type: LOGOUT,
+  payload: {
+    fromPermission: options.fromPermission,
+  }
 })
 
 export const TOKEN_REFRESHED = `${NS}TOKEN_REFRESHED`

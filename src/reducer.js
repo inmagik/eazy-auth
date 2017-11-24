@@ -29,6 +29,7 @@ const initialState = {
   loginLoading: false,
   loginError: null,
   authenticatingWithToken: false,
+  logoutFromPermission: false,
 }
 
 const authReducer = (previousState = initialState, { type, payload, error }) => {
@@ -57,6 +58,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
         user: payload.user,
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,
+        logoutFromPermission: false,
       }
     case AUTH_WITH_TOKEN_LOADING:
       return {
@@ -88,7 +90,10 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
         user: payload,
       }
     case LOGOUT:
-      return initialState
+      return {
+        ...initialState,
+        logoutFromPermission: payload.fromPermission,
+      }
     default:
       return previousState
   }

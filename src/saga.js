@@ -110,8 +110,11 @@ const makeAuth = ({
       }
       return result
     } catch (error) {
-      if (error.status === 403 || error.status === 401) {
+      if (error.status === 401) {
         yield put(logout())
+      }
+      if (error.status === 403) {
+        yield put(logout({ fromPermission: true }))
       }
       throw error
     }
