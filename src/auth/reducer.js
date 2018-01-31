@@ -1,3 +1,4 @@
+import { withExtraReducer } from '../utils'
 import {
   // Form login auth actions
   LOGIN_LOADING,
@@ -99,11 +100,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
   }
 }
 
-const makeAuthReducer = (extraReducer) => {
-  if (typeof extraReducer === 'function') {
-    return (prevState, action) => extraReducer(prevState, action, authReducer)
-  }
-  return authReducer
-}
+const makeAuthReducer = (extraReducer) =>
+  withExtraReducer(authReducer, extraReducer)
 
 export default makeAuthReducer

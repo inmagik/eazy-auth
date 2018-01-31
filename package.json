@@ -19,5 +19,8 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
     "rimraf": "^2.6.2"
+  },
+  "dependencies": {
+    "hoist-non-react-statics": "^2.3.1"
   }
 }

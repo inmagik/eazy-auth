@@ -1,5 +1,4 @@
-// Namespace for auth actions...
-const NS = '@@eazy-auth/'
+import { NS } from '../config'
 
 export const LOGIN = `${NS}LOGIN`
 export const LOGIN_LOADING = `${NS}LOGIN_LOADING`
