@@ -1,6 +1,6 @@
 {
   "name": "eazy-auth",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Easy auth for react + redux + saga + routerV4",
   "main": "lib/index.js",
   "license": "MIT",
