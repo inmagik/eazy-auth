@@ -10,14 +10,20 @@ import {
   login,
 } from '../actions'
 
-export default function withAuthLogin() {
+export default function withAuthLogin(c = {}) {
+  const config = {
+    credentials: ['email', 'password'],
+    ...c,
+  }
+  const defaultCredentials = config.credentials.reduce((r, c) => ({
+    ...r,
+    [c]: '',
+  }), {})
+
   return function wrapWithLogin(WrappedComponent) {
     class BaseLogin extends PureComponent {
       state = {
-        credentials: {
-          email: '',
-          password: '',
-        }
+        credentials: defaultCredentials,
       }
 
       componentWillUnmount() {
@@ -31,26 +37,31 @@ export default function withAuthLogin() {
         }))
       }
 
-      onEmailChange = this.setCredential('email')
-      onPasswordChange = this.setCredential('password')
-
       handleLoginSubmit = e => {
         e.preventDefault()
         const { credentials } = this.state
-        if (
-            credentials.email.trim() !== '' &&
-            credentials.password.trim() !== ''
-        ) {
+        const isValid = Object.keys(credentials)
+          .every(c => credentials[c].trim() !== '')
+
+        if (isValid) {
           this.props.login(credentials)
         }
+      }
+
+      makeCredentialsProp = () => {
+        return config.credentials.reduce((r, c) => ({
+          ...r,
+          [c]: {
+            value: this.state.credentials[c],
+            onChange: this.makeOnCredentialChange(c),
+          }
+        }), {})
       }
 
       render() {
         return createElement(WrappedComponent, {
           ...this.props,
-          ...this.state.credentials,
-          onEmailChange: this.onEmailChange,
-          onPasswordChange: this.onPasswordChange,
+          credentials: this.makeCredentialsProp(),
           handleSubmit: this.handleLoginSubmit,
         })
       }
