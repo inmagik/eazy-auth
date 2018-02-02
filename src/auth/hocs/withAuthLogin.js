@@ -34,10 +34,15 @@ export default function withAuthLogin() {
       onEmailChange = this.setCredential('email')
       onPasswordChange = this.setCredential('password')
 
-      onSubmitLogin = e => {
+      handleLoginSubmit = e => {
         e.preventDefault()
         const { credentials } = this.state
-        this.props.login(credentials)
+        if (
+            credentials.email.trim() !== '' &&
+            credentials.password.trim() !== ''
+        ) {
+          this.props.login(credentials)
+        }
       }
 
       render() {
@@ -46,7 +51,7 @@ export default function withAuthLogin() {
           ...this.state.credentials,
           onEmailChange: this.onEmailChange,
           onPasswordChange: this.onPasswordChange,
-          onSubmitLogin: this.onSubmitLogin,
+          handleSubmit: this.handleLoginSubmit,
         })
       }
     }
