@@ -12,14 +12,14 @@ import {
   tokenRefreshed,
 } from './actions'
 
-const defaultMakeErrorFromException = ex =>
-  !ex ? null : ex.message ? ex.message : ex
+const defaultMakeErrorFromException = ex => ex
 
 const makeAuth = ({
   // Do the me call using after login to get
   meCall,
   loginCall,
   refreshTokenCall,
+  reduxMountPoint = 'auth',
   localStorageNamespace = 'auth',
   makeErrorFromException = defaultMakeErrorFromException,
 }) => {
@@ -59,8 +59,7 @@ const makeAuth = ({
   }
 
   // redux saga helpers for getting tokens from redux store
-  // TODO: Maybe in future we can provide custom store key
-  const selectAuth = state => state.auth
+  const selectAuth = state => state[reduxMountPoint]
   function *getAccessToken() {
     return yield select(state => selectAuth(state).accessToken)
   }
@@ -156,9 +155,13 @@ const makeAuth = ({
     const { credentials } = payload
     yield put({ type: LOGIN_LOADING })
     try {
-      const { access_token, refresh_token } = yield call(loginCall, credentials)
+      const loginResponse = yield call(loginCall, credentials)
+      const { access_token, refresh_token } = loginResponse
       // Using access token to get user info
-      const user = yield call(meCall, access_token)
+      // ... passing additional param loginResponse over access_token
+      // to get for example the user info from login response rather than
+      // the me api endpoint
+      const user = yield call(meCall, access_token, loginResponse)
       // Store tokens
       yield lsStoreAccessToken(access_token)
       yield lsStoreRefreshToken(refresh_token)

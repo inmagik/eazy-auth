@@ -13,6 +13,7 @@ import {
 export default function withAuthLogin(c = {}) {
   const config = {
     credentials: ['email', 'password'],
+    clearErrorOnChange: true,
     ...c,
   }
   const defaultCredentials = config.credentials.reduce((r, c) => ({
@@ -31,7 +32,13 @@ export default function withAuthLogin(c = {}) {
       }
 
       makeOnCredentialChange = field => e => {
-        const value = e.target.value
+        let value = e
+        if (e && e.target instanceof Element) {
+          value = e.target.value
+        }
+        if (this.props.error && config.clearErrorOnChange) {
+          this.props.clearLoginError()
+        }
         this.setState(prevState => ({
           credentials: { ...prevState.credentials, [field]: value }
         }))

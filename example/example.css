@@ -1,0 +1,36 @@
+.brand {
+  margin-left: 10px;
+  color: #24292e;
+  font-size: 20pt;
+  margin-right: 10px;
+  font-weight: 700;
+}
+
+.brand > .ex {
+  color: #24292e;
+  font-size: 16px;
+  font-style: italic;
+}
+a, a:visited {
+  color: #000;
+  text-decoration: none;
+}
+a.active, a.inmagik {
+  color: deepskyblue;
+}
+a.active:before {
+  content: '~ '
+}
+.center {
+  text-align: center;
+}
+td {
+  text-align: left;
+}
+.user-login {
+  padding: 5px;
+}
+.quote {
+  font-size: 16pt;
+  font-style: italic;
+}
