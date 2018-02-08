@@ -13,7 +13,7 @@ import {
 export default function withAuthLogin(c = {}) {
   const config = {
     credentials: ['email', 'password'],
-    clearErrorOnChange: true,
+    shouldclearErrorOnChange: true,
     ...c,
   }
   const defaultCredentials = config.credentials.reduce((r, c) => ({
