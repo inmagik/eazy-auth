@@ -6,6 +6,9 @@ Battery included but extractable package to automate auth boring stuff.
 
 The stack is `redux`, `react` for UI, `redux-saga` for side effects and `react-router-dom` for routing.
 
+
+[Example App](https://inmagik.github.io/eazy-auth)
+
 ## Install
 ```
 yarn add eazy-auth
@@ -14,7 +17,6 @@ or
 ```
 npm install eazy-auth --save
 ```
-
 
 ## Cheat sheet
 ```js
