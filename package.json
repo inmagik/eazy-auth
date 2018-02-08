@@ -1,6 +1,6 @@
 {
   "name": "eazy-auth",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Easy auth stuff with redux",
   "main": "lib/index.js",
   "license": "MIT",
@@ -47,5 +47,5 @@
     "redux": "^3.0.0",
     "redux-saga": "^0.15.x",
     "react-router-dom": "^4.1.x"
-   }
+  }
 }
