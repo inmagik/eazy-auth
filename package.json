@@ -1,7 +1,7 @@
 {
   "name": "eazy-auth",
   "version": "0.1.5",
-  "description": "Easy auth for react + redux + saga + routerV4",
+  "description": "Easy auth stuff with redux",
   "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
@@ -22,6 +22,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
+    "css-loader": "^0.28.9",
     "gh-pages": "^1.1.0",
     "html-webpack-plugin": "^2.30.1",
     "lodash": "^4.17.5",
@@ -32,13 +33,18 @@
     "redux": "^3.7.2",
     "redux-saga": "^0.16.0",
     "rimraf": "^2.6.2",
+    "style-loader": "^0.20.1",
     "uglifyjs-webpack-plugin": "^1.1.8",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1"
   },
   "dependencies": {
-    "css-loader": "^0.28.9",
-    "hoist-non-react-statics": "^2.3.1",
-    "style-loader": "^0.20.1"
-  }
+    "hoist-non-react-statics": "^2.3.1"
+  },
+  "peerDependencies": {
+    "react": "^15.0.0-0 || ^16.0.0-0",
+    "redux": "^2.0.0 || ^3.0.0",
+    "redux-saga": "^0.15.x",
+    "react-router-dom": "^4.1.x",
+   }
 }
