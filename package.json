@@ -8,7 +8,9 @@
     "example": "webpack-dev-server",
     "clean": "rimraf lib",
     "build": "babel src --out-dir lib",
-    "prepublishOnly": "npm run clean && npm run build"
+    "build:example": "rimraf build && webpack --config webpack.prod.js",
+    "prepublishOnly": "npm run clean && npm run build",
+    "deploy": "npm run build:example && cpr 404.html build/ && gh-pages -d build"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -20,6 +22,8 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
+    "gh-pages": "^1.1.0",
+    "html-webpack-plugin": "^2.30.1",
     "lodash": "^4.17.5",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
@@ -28,6 +32,7 @@
     "redux": "^3.7.2",
     "redux-saga": "^0.16.0",
     "rimraf": "^2.6.2",
+    "uglifyjs-webpack-plugin": "^1.1.8",
     "webpack": "^3.10.0",
     "webpack-dev-server": "^2.11.1"
   },
