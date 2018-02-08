@@ -13,7 +13,7 @@ import {
 export default function withAuthLogin(c = {}) {
   const config = {
     credentials: ['email', 'password'],
-    shouldclearErrorOnChange: true,
+    shouldClearErrorOnChange: true,
     ...c,
   }
   const defaultCredentials = config.credentials.reduce((r, c) => ({
@@ -36,7 +36,7 @@ export default function withAuthLogin(c = {}) {
         if (e && e.target instanceof Element) {
           value = e.target.value
         }
-        if (this.props.error && config.clearErrorOnChange) {
+        if (this.props.error && config.shouldClearErrorOnChange) {
           this.props.clearLoginError()
         }
         this.setState(prevState => ({
