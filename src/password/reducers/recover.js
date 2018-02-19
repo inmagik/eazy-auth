@@ -15,7 +15,7 @@ const defaultState = {
 const recover = (prevState = defaultState, { type, payload, error }) => {
   switch (type) {
     case RECOVER_PASSWORD_UNLOAD:
-      return defaultRecoverState
+      return defaultState
     case RECOVER_PASSWORD_LOADING:
       return {
         ...prevState,
