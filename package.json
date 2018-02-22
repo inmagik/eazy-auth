@@ -1,6 +1,6 @@
 {
   "name": "eazy-auth",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "Easy auth stuff with redux",
   "main": "lib/index.js",
   "license": "MIT",
