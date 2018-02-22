@@ -27,6 +27,7 @@ const initialState = {
   user: null,
   accessToken: null,
   refreshToken: null,
+  expires: null,
   loginLoading: false,
   loginError: null,
   authenticatingWithToken: false,
@@ -59,6 +60,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
         user: payload.user,
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,
+        expires: payload.expires,
         logoutFromPermission: false,
       }
     case AUTH_WITH_TOKEN_LOADING:
@@ -75,6 +77,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
       return {
         ...previousState,
         authenticatingWithToken: false,
+        expires: payload.expires,
         user: payload.user,
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,
@@ -82,6 +85,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
     case TOKEN_REFRESHED:
       return {
         ...previousState,
+        expires: payload.expires,
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,
       }

@@ -1,4 +1,5 @@
-import { take, call, put, select } from 'redux-saga/effects'
+import { take, call, put, select, fork, cancel } from 'redux-saga/effects'
+import { delay } from 'redux-saga'
 import {
   LOGIN,
   LOGIN_LOADING,
@@ -35,27 +36,48 @@ const makeAuth = ({
       console.error('Error while accessing local storage', e)
     }
   }
+  // Get from local storage
   function *lsGetAccessToken() {
     return yield ls('getItem', `${localStorageNamespace}:accessToken`)
   }
   function *lsGetRefreshToken() {
     return yield ls('getItem', `${localStorageNamespace}:refreshToken`)
   }
+  function *lsGetExpires() {
+    const expiresAndTimestamp = yield ls('getItem', `${localStorageNamespace}:expires`)
+    if (expiresAndTimestamp) {
+      const timestamp = parseInt(new Date().getTime() / 1000, 10)
+      const [relativeExpires, realtiveTimestamp] = expiresAndTimestamp.split(',')
+      return parseInt(relativeExpires, 10) - (timestamp - parseInt(realtiveTimestamp, 10))
+    }
+    return null
+  }
+  // Store to local storage
   function *lsStoreAccessToken(token) {
     yield ls('setItem', `${localStorageNamespace}:accessToken`, token)
   }
   function *lsStoreRefreshToken(token) {
     yield ls('setItem', `${localStorageNamespace}:refreshToken`, token)
   }
+  function *lsStoreExpires(expires) {
+    // Store along seconds timestamp...
+    const timestamp = parseInt(new Date().getTime() / 1000, 10)
+    yield ls('setItem', `${localStorageNamespace}:expires`, `${expires},${timestamp}`)
+  }
+  // Remove from local storage
   function *lsRemoveAccessToken(token) {
     yield ls('removeItem', `${localStorageNamespace}:accessToken`)
   }
   function *lsRemoveRefreshToken(token) {
     yield ls('removeItem', `${localStorageNamespace}:refreshToken`)
   }
+  function *lsRemoveExpires(token) {
+    yield ls('removeItem', `${localStorageNamespace}:expires`)
+  }
   function *lsRemoveTokens() {
     yield lsRemoveAccessToken()
     yield lsRemoveRefreshToken()
+    yield lsRemoveExpires()
   }
 
   // redux saga helpers for getting tokens from redux store
@@ -65,6 +87,9 @@ const makeAuth = ({
   }
   function *getRefreshToken() {
     return yield select(state => selectAuth(state).refreshToken)
+  }
+  function *getTokenExpires() {
+    return yield select(state => selectAuth(state).expires)
   }
 
   function* apiCallWithRefresh(accessToken, refreshToken, apiFn, ...args) {
@@ -87,7 +112,11 @@ const makeAuth = ({
           throw error
         }
         const result = yield call(apiFn(refresh.access_token), ...args)
-        return [result, { accessToken: refresh.access_token, refreshToken: refresh.refresh_token }]
+        return [result, {
+          accessToken: refresh.access_token,
+          refreshToken: refresh.refresh_token,
+          expires: refresh.expires,
+        }]
       } else {
         // Normal error handling
         throw error
@@ -105,6 +134,9 @@ const makeAuth = ({
       if (refresh) {
         yield lsStoreAccessToken(refresh.accessToken)
         yield lsStoreRefreshToken(refresh.refreshToken)
+        if (refresh.expires) {
+          yield lsStoreExpires(refresh.expires)
+        }
         yield put(tokenRefreshed(refresh))
       }
       return result
@@ -133,9 +165,10 @@ const makeAuth = ({
           { accessToken, refreshToken }
         ] = yield apiCallWithRefresh(lsAccessToken, lsRefreshToken, me)
         // Save tokens and user info in redux store
+        const expires = yield lsGetExpires()
         yield put({
           type: AUTH_WITH_TOKEN_SUCCESS,
-          payload: { user, accessToken, refreshToken }
+          payload: { user, accessToken, refreshToken, expires }
         })
       } catch (e) {
         yield put({
@@ -156,7 +189,7 @@ const makeAuth = ({
     yield put({ type: LOGIN_LOADING })
     try {
       const loginResponse = yield call(loginCall, credentials)
-      const { access_token, refresh_token } = loginResponse
+      const { access_token, refresh_token, expires = null } = loginResponse
       // Using access token to get user info
       // ... passing additional param loginResponse over access_token
       // to get for example the user info from login response rather than
@@ -165,11 +198,15 @@ const makeAuth = ({
       // Store tokens
       yield lsStoreAccessToken(access_token)
       yield lsStoreRefreshToken(refresh_token)
+      if (expires) {
+        yield lsStoreExpires(expires)
+      }
       // Notify redux store login is ok!
       yield put({
         type: LOGIN_SUCCESS,
         payload: {
           user,
+          expires,
           accessToken: access_token,
           refreshToken: refresh_token,
         },
@@ -188,13 +225,42 @@ const makeAuth = ({
     yield lsRemoveTokens()
   }
 
+  // Wait expiration and try to rehresh token!
+  function *refreshOnExpirationLoop() {
+    while (true) {
+      const expires = yield getTokenExpires()
+      yield delay(1000 * expires)
+
+      const refreshToken = yield getRefreshToken()
+      try {
+        // Try to refresh token after waiting expiration
+        const refresh = yield call(refreshTokenCall, refreshToken)
+        // Write to local storage...
+        yield lsStoreAccessToken(refresh.access_token)
+        yield lsStoreRefreshToken(refresh.refresh_token)
+        yield lsStoreExpires(refresh.expires)
+        // Save in redux state
+        yield put(tokenRefreshed(refresh))
+      } catch (error) {
+        yield put(logout())
+      }
+    }
+  }
+
   // le Auth flow saga
   function* authFlow() {
     // try to authenticate using current local storage token
     yield authenticateWithStorageToken()
     // when authenticated wait for logout action
     if (yield getAccessToken()) {
+      let refreshTokenTask
+      if (yield getTokenExpires()) {
+        refreshTokenTask = yield fork(refreshOnExpirationLoop)
+      }
       yield watchLogout()
+      if (refreshTokenTask) {
+        yield cancel(refreshTokenTask)
+      }
     }
 
     // endless auth loop login -> auth -> logout -> login -> ...
@@ -203,7 +269,14 @@ const makeAuth = ({
       yield watchLogin()
       // if login ok user is authenticated now wait for logout
       if (yield getAccessToken()) {
+        let refreshTokenTask
+        if (yield getTokenExpires()) {
+          refreshTokenTask = yield fork(refreshOnExpirationLoop)
+        }
         yield watchLogout()
+        if (refreshTokenTask) {
+          yield cancel(refreshTokenTask)
+        }
       }
     }
   }

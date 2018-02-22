@@ -7,3 +7,5 @@ export const getAuthUser = state => state.auth.user
 export const getAuthAccessToken = state => state.auth.accessToken
 
 export const getAuthRefreshToken = state => state.auth.refreshToken
+
+export const getAuthTokenExpires = state => state.auth.expires
