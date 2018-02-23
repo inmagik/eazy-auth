@@ -240,7 +240,11 @@ const makeAuth = ({
         yield lsStoreRefreshToken(refresh.refresh_token)
         yield lsStoreExpires(refresh.expires)
         // Save in redux state
-        yield put(tokenRefreshed(refresh))
+        yield put(tokenRefreshed({
+          expires: refresh.expires,
+          accessToken: refresh.access_token,
+          refreshToken: refresh.refresh_token,
+        }))
       } catch (error) {
         yield put(logout())
       }
