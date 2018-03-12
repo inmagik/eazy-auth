@@ -29,9 +29,11 @@ export default function withPasswordRecover() {
         })
       }
 
-      onSubmitRecoverPassword = e => {
-        e.preventDefault()
-        this.props.recoverPassword(this.state.recoverEmail)
+      onSubmitRecoverPassword = (e, ...args) => {
+        if (e && typeof e.preventDefault === 'function') {
+          e.preventDefault()
+        }
+        this.props.recoverPassword(this.state.recoverEmail, ...args)
       }
 
       render() {
