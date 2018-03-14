@@ -1,4 +1,4 @@
-import { fork, select, call, put } from 'redux-saga/effects'
+import { fork, call, put } from 'redux-saga/effects'
 import { takeLatestAndCancel } from '../utils/effects'
 import {
   RECOVER_PASSWORD,
@@ -16,11 +16,6 @@ import {
   RESET_PASSWORD_SENT_SUCCESS,
   RESET_PASSWORD_SENT_FAILURE,
 } from './actions'
-import {
-  getPasswordRecoverEmail,
-  getResetNewPassword,
-  getResetPasswordToken,
-} from './selectors'
 
 // Make password saga
 const makePassword = ({
@@ -30,7 +25,6 @@ const makePassword = ({
 }) => {
 
   function* handleRecover({ payload: { params } }) {
-    const email = yield select(getPasswordRecoverEmail)
     yield put({ type: RECOVER_PASSWORD_LOADING })
     try {
       yield call(recoverPasswordCall, ...params)
@@ -50,8 +44,7 @@ const makePassword = ({
     }
   }
 
-  function *handleResetPassword({ payload: { password, params } }) {
-    const token = yield select(getResetPasswordToken)
+  function *handleResetPassword({ payload: { token, password, params } }) {
     yield put({ type: RESET_PASSWORD_SENT_LOADING })
     try {
       yield call(resetPasswordCall, token, password, ...params)

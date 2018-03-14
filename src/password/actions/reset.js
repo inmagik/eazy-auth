@@ -23,9 +23,10 @@ export const RESET_PASSWORD_SENT_LOADING = `${NS}RESET_PASSWORD_SENT_LOADING`
 export const RESET_PASSWORD_SENT_SUCCESS = `${NS}RESET_PASSWORD_SENT_SUCCESS`
 export const RESET_PASSWORD_SENT_FAILURE = `${NS}RESET_PASSWORD_SENT_FAILURE`
 
-export const resetPassword = (password, ...params) => ({
+export const resetPassword = (token, password, ...params) => ({
   type: RESET_PASSWORD_SENT,
   payload: {
+    token,
     password,
     params,
   },

@@ -8,6 +8,7 @@
     "example": "webpack-dev-server",
     "clean": "rimraf lib",
     "build": "babel src --out-dir lib",
+    "watch": "babel --watch src --out-dir lib",
     "build:example": "rimraf build && webpack --config webpack.prod.js",
     "prepublishOnly": "npm run clean && npm run build",
     "deploy": "npm run build:example && cpr 404.html build/ && gh-pages -d build"
