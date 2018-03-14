@@ -1,6 +1,7 @@
 import { PureComponent, createElement } from 'react'
 import { connect } from 'react-redux'
 import hoistStatics from 'hoist-non-react-statics'
+import { defaultMemoize } from 'reselect'
 import {
   isPasswordRecoverLoading,
   isPasswordRecovered,
@@ -11,6 +12,11 @@ import {
   recoverPassword,
   unloadPasswordRecover,
 } from '../actions'
+import {
+  isEmailValid,
+} from '../../utils'
+
+const isEmailValidMem = defaultMemoize(isEmailValid)
 
 export default function withPasswordRecover() {
   return function wrapWithRecover(WrappedComponent) {
@@ -41,6 +47,7 @@ export default function withPasswordRecover() {
           ...this.props,
           recoverEmail: this.state.recoverEmail,
           onRecoverEmailChange: this.onRecoverEmailChange,
+          isRecoverEmailValid: isEmailValidMem(this.state.recoverEmail),
           onSubmitRecoverPassword: this.onSubmitRecoverPassword,
         })
       }
