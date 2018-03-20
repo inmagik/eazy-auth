@@ -101,8 +101,8 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
       return {
         ...previousState,
         user: {
-          ...payload,
           ...previousState.user,
+          ...payload,
         },
       }
     case LOGOUT:
