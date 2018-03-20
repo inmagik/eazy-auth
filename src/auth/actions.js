@@ -39,3 +39,9 @@ export const updateUser = user => ({
   type: UPDATE_USER,
   payload: user,
 })
+
+export const PATCH_USER = `${NS}PATCH_USER`
+export const patchUser = partialUser => ({
+  type: PATCH_USER,
+  payload: partialUser,
+})

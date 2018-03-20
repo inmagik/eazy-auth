@@ -19,6 +19,9 @@ import {
   // Update user data
   UPDATE_USER,
 
+  // Path user data
+  PATCH_USER,
+
   // Logout action
   LOGOUT,
 } from './actions'
@@ -93,6 +96,14 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
       return {
         ...previousState,
         user: payload,
+      }
+    case PATCH_USER:
+      return {
+        ...previousState,
+        user: {
+          ...payload,
+          ...previousState.user,
+        },
       }
     case LOGOUT:
       return {
