@@ -96,7 +96,7 @@ const makeAuth = ({
     try {
       const result = yield call(apiFn(accessToken), ...args)
       // Response ok no need to refresh
-      return [result, { accessToken, refreshToken }]
+      return [result, { accessToken, refreshToken, refreshed: false }]
     } catch (error) {
       // No refresh function given throw the original error
       if (typeof refreshTokenCall !== 'function') {
@@ -116,6 +116,7 @@ const makeAuth = ({
           accessToken: refresh.access_token,
           refreshToken: refresh.refresh_token,
           expires: refresh.expires,
+          refreshed: true,
         }]
       } else {
         // Normal error handling
@@ -131,7 +132,7 @@ const makeAuth = ({
 
     try {
       const [result, refresh] = yield apiCallWithRefresh(accessToken, refreshToken, apiFn, ...args)
-      if (refresh) {
+      if (refresh && refresh.refreshed) {
         yield lsStoreAccessToken(refresh.accessToken)
         yield lsStoreRefreshToken(refresh.refreshToken)
         if (refresh.expires) {
