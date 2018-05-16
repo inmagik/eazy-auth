@@ -2,15 +2,16 @@
   "name": "eazy-auth",
   "version": "0.3.4",
   "description": "Easy auth stuff with redux",
-  "main": "lib/index.js",
+  "main": "./index.js",
   "license": "MIT",
   "scripts": {
     "example": "webpack-dev-server",
     "clean": "rimraf lib",
-    "build": "babel src --out-dir lib",
-    "watch": "babel --watch src --out-dir lib",
     "build:example": "rimraf build && webpack --config webpack.prod.js",
-    "prepublishOnly": "npm run clean && npm run build",
+    "build:copyfiles": "copyfiles README.MD LICENSE package.json lib",
+    "build:js": "babel src --out-dir lib --ignore __tests__",
+    "build": "rimraf lib && npm run build:js && npm run build:copyfiles",
+    "build:watch": "npm run build && babel src --out-dir lib --ignore __tests__ --watch",
     "deploy": "npm run build:example && cpr 404.html build/ && gh-pages -d build"
   },
   "devDependencies": {
@@ -23,6 +24,7 @@
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-react": "^6.24.1",
+    "copyfiles": "^2.0.0",
     "css-loader": "^0.28.9",
     "gh-pages": "^1.1.0",
     "html-webpack-plugin": "^2.30.1",
