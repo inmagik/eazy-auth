@@ -13,6 +13,7 @@ import {
 export default function withAuthLogin(c = {}) {
   const config = {
     credentials: ['email', 'password'],
+    native: false,
     shouldClearErrorOnChange: true,
     ...c,
   }
@@ -33,7 +34,12 @@ export default function withAuthLogin(c = {}) {
 
       makeOnCredentialChange = field => e => {
         let value = e
-        if (e && e.target instanceof Element) {
+        if (
+          e &&
+          typeof window !== 'undefined' &&
+          typeof window.Element !== 'undefined' &&
+          e.target instanceof window.Element
+        ) {
           value = e.target.value
         }
         if (this.props.error && config.shouldClearErrorOnChange) {
@@ -45,7 +51,13 @@ export default function withAuthLogin(c = {}) {
       }
 
       handleLoginSubmit = e => {
-        e.preventDefault()
+        if (
+          e &&
+          typeof e === 'object' &&
+          typeof e.preventDefault === 'function'
+        ) {
+          e.preventDefault()
+        }
         const { credentials } = this.state
         const isValid = Object.keys(credentials)
           .every(c => credentials[c].trim() !== '')
@@ -56,13 +68,16 @@ export default function withAuthLogin(c = {}) {
       }
 
       makeCredentialsProp = () => {
-        return config.credentials.reduce((r, c) => ({
-          ...r,
-          [c]: {
-            value: this.state.credentials[c],
-            onChange: this.makeOnCredentialChange(c),
+        return config.credentials.reduce((r, c) => {
+          const onChangeKey = config.native ? 'onChangeText' : 'onChange'
+          return {
+            ...r,
+            [c]: {
+              value: this.state.credentials[c],
+              [onChangeKey]: this.makeOnCredentialChange(c),
+            }
           }
-        }), {})
+        }, {})
       }
 
       render() {
