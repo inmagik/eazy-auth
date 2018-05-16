@@ -5,6 +5,8 @@ import {
   LOGIN_LOADING,
   LOGIN_FAILURE,
   LOGIN_SUCCESS,
+  BOOTSTRAP_AUTH_START,
+  BOOTSTRAP_AUTH_END,
   AUTH_WITH_TOKEN_LOADING,
   AUTH_WITH_TOKEN_FAILURE,
   AUTH_WITH_TOKEN_SUCCESS,
@@ -178,6 +180,7 @@ const makeAuth = ({
 
   function* authenticateWithStorageToken() {
     // Access toke from local storage
+    yield put({ type: BOOTSTRAP_AUTH_START })
     const lsAccessToken = yield lsGetAccessToken()
     const lsRefreshToken = yield lsGetRefreshToken()
     if (lsAccessToken) {
@@ -204,6 +207,7 @@ const makeAuth = ({
         yield lsRemoveTokens()
       }
     }
+    yield put({ type: BOOTSTRAP_AUTH_END })
   }
 
   // Watch login action and then try to authenticate user with given

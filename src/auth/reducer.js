@@ -8,6 +8,10 @@ import {
   // Clear the login error
   CLEAR_LOGIN_ERROR,
 
+  // Boostrapping auth / getting tokens from nowhere...
+  BOOTSTRAP_AUTH_START,
+  BOOTSTRAP_AUTH_END,
+
   // Initial auth from local storage token actions
   AUTH_WITH_TOKEN_LOADING,
   AUTH_WITH_TOKEN_FAILURE,
@@ -33,6 +37,7 @@ const initialState = {
   expires: null,
   loginLoading: false,
   loginError: null,
+  bootstrappingAuth: false,
   authenticatingWithToken: false,
   logoutFromPermission: false,
 }
@@ -65,6 +70,16 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
         refreshToken: payload.refreshToken,
         expires: payload.expires,
         logoutFromPermission: false,
+      }
+    case BOOTSTRAP_AUTH_START:
+      return {
+        ...previousState,
+        bootstrappingAuth: true,
+      }
+    case BOOTSTRAP_AUTH_END:
+      return {
+        ...previousState,
+        bootstrappingAuth: false,
       }
     case AUTH_WITH_TOKEN_LOADING:
       return {

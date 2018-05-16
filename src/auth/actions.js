@@ -1,5 +1,8 @@
 import { NS } from '../config'
 
+export const BOOTSTRAP_AUTH_START = `${NS}BOOTSTRAP_AUTH_START`
+export const BOOTSTRAP_AUTH_END = `${NS}BOOTSTRAP_AUTH_END`
+
 export const LOGIN = `${NS}LOGIN`
 export const LOGIN_LOADING = `${NS}LOGIN_LOADING`
 export const LOGIN_FAILURE = `${NS}LOGIN_FAILURE`
