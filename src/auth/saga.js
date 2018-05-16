@@ -15,20 +15,44 @@ import {
 
 const defaultMakeErrorFromException = ex => ex
 
+const noopStorageBackend = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+}
+
 const makeAuth = ({
   // Do the me call using after login to get
   meCall,
   loginCall,
   refreshTokenCall,
+  storageBackend,
   reduxMountPoint = 'auth',
   localStorageNamespace = 'auth',
   makeErrorFromException = defaultMakeErrorFromException,
 }) => {
 
-  // redux saga helpers for Local Storage
+  let choosedStoageBackend
+  if (typeof storageBackend === 'undefined' || storageBackend === null) {
+    if (
+      typeof window !== 'undefined' &&
+      typeof window.localStorage !== 'undefined'
+    ) {
+      // If provided by environment use local storage
+      choosedStoageBackend = window.localStorage
+    } else {
+      // Use a noop storage backend (don't store anything)
+      choosedStoageBackend = noopStorageBackend
+    }
+  } else {
+    // When given use provided storage backend
+    choosedStoageBackend = storageBackend
+  }
+
+  // redux saga helpers for Stroage Backend
   function *ls(method, ...args) {
     try {
-      return yield call([window.localStorage, method], ...args)
+      return yield call([choosedStoageBackend, method], ...args)
     } catch (e) {
       // Such shitty friend like mobile safari anonymous navigaton
       // kill trhows exception when trying to write on local storage
