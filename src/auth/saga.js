@@ -64,10 +64,20 @@ const makeAuth = ({
   }
   // Get from local storage
   function *lsGetAccessToken() {
-    return yield ls('getItem', `${localStorageNamespace}:accessToken`)
+    const rawToken = yield ls('getItem', `${localStorageNamespace}:accessToken`)
+    try {
+      return JSON.parse(rawToken)
+    } catch (e) {
+      return null
+    }
   }
   function *lsGetRefreshToken() {
-    return yield ls('getItem', `${localStorageNamespace}:refreshToken`)
+    const rawToken = yield ls('getItem', `${localStorageNamespace}:refreshToken`)
+    try {
+      return JSON.parse(rawToken)
+    } catch (e) {
+      return null
+    }
   }
   function *lsGetExpires() {
     const expiresAndTimestamp = yield ls('getItem', `${localStorageNamespace}:expires`)
@@ -80,10 +90,12 @@ const makeAuth = ({
   }
   // Store to local storage
   function *lsStoreAccessToken(token) {
-    yield ls('setItem', `${localStorageNamespace}:accessToken`, token)
+    const jsonToken = typeof token === 'undefined' ? 'null' : JSON.stringify(token)
+    yield ls('setItem', `${localStorageNamespace}:accessToken`, jsonToken)
   }
   function *lsStoreRefreshToken(token) {
-    yield ls('setItem', `${localStorageNamespace}:refreshToken`, token)
+    const jsonToken = typeof token === 'undefined' ? 'null' : JSON.stringify(token)
+    yield ls('setItem', `${localStorageNamespace}:refreshToken`, jsonToken)
   }
   function *lsStoreExpires(expires) {
     // Store along seconds timestamp...
