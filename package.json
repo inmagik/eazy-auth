@@ -49,7 +49,7 @@
     "react": "^15.0.0-0 || ^16.0.0-0",
     "react-redux": "^4.3.0 || ^5.0.0",
     "react-router-dom": "^4.1.x",
-    "redux": "^3.0.0",
+    "redux": "^3.0.0 || ^4.0.0",
     "redux-saga": ">=0.15.0"
   },
   "keywords": [
@@ -61,5 +61,6 @@
     "redux-saga",
     "react-auth",
     "react-router"
-  ]
+  ],
+  "sideEffects": false
 }
