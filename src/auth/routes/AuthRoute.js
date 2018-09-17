@@ -30,9 +30,7 @@ const AuthRoute = ({
           if (userRedirectTo) {
             return (
               <Redirect
-                to={{
-                  pathname: userRedirectTo,
-                }}
+                to={userRedirectTo}
               />
             )
           }
@@ -41,13 +39,21 @@ const AuthRoute = ({
         return React.createElement(component, props)
       }
       // User not authenticated, redirect to login
+      const to = typeof redirectTo === 'string'
+        ? {
+          pathname: redirectTo,
+        }
+        : redirectTo
       return (
         <Redirect
           to={{
-            pathname: redirectTo,
-            state: (rememberReferrer && !auth.logoutFromPermission)
-              ? { referrer: props.location }
-              : undefined,
+            ...to,
+            state: {
+              ...to.state,
+              referrer: (rememberReferrer && !auth.logoutFromPermission)
+                ? props.location
+                : undefined
+            },
           }}
         />
       )

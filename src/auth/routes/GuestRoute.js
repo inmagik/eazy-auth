@@ -24,16 +24,26 @@ const GuestRoute = ({
         if (redirectToReferrer && location.state && location.state.referrer) {
           return (
             <Redirect
-              to={location.state.referrer}
+              to={
+                typeof redirectTo === 'string'
+                  ? location.state.referrer
+                  // If redirectTo is an object merged the state
+                  // of location to redirect....
+                  : {
+                    ...location.state.referrer,
+                    state: {
+                      ...redirectTo.state,
+                      ...location.state.referrer.state,
+                    }
+                  }
+              }
             />
           )
         }
 
         return (
           <Redirect
-            to={{
-              pathname: redirectTo,
-            }}
+            to={redirectTo}
           />
         )
       }
