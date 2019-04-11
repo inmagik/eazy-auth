@@ -26,7 +26,8 @@ const loginCall = ({ username, password }) => new Promise((resolve, reject) => {
 
     if (user) {
       resolve({
-        access_token: `${TOKEN}${username}`,
+        access_token: username,
+        refresh_token: username
       })
     } else {
       reject({
@@ -39,19 +40,33 @@ const loginCall = ({ username, password }) => new Promise((resolve, reject) => {
   }, 1000)
 })
 
+const refreshTokenCall = username => new Promise(resolve => {
+  console.log('Call refresh', username)
+  resolve({ access_token: `${TOKEN}${username}`, refresh_token: 777 })
+})
+
 // Token --> User data if me is performed after a login call
 // loginData was provided as additional argument...
 const meCall = (token, loginData) => new Promise((resolve, reject) => {
   setTimeout(() => {
+    let user
+    let search
     const parts = token.split(TOKEN)
-    const user = parts.length == 2 ? find(users, { username: parts[1] }) : null
+    if (loginData) {
+      search = parts[0]
+    } else {
+      search = parts[1]
+    }
+    user = find(users, { username: search })
 
     if (user) {
       resolve(omit(user, 'password'))
     } else {
       reject({
         status: 401,
-        error: 'BAD TOKEN'
+        data: {
+          error: 'BAD TOKEN'
+        }
       })
     }
   }, 200)
@@ -60,6 +75,7 @@ const meCall = (token, loginData) => new Promise((resolve, reject) => {
 const { authFlow, authCall } = makeAuthFlow({
   makeErrorFromException: ({ data }) => data.error,
   loginCall,
+  refreshTokenCall,
   meCall,
 })
 
