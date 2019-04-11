@@ -202,10 +202,22 @@ const makeAuth = ({
         const me = token => () => meCall(token)
         const [
           user,
-          { accessToken, refreshToken }
+          { accessToken, refreshToken, expires: refreshExpires, refreshed }
         ] = yield apiCallWithRefresh(lsAccessToken, lsRefreshToken, me)
+
+        let expires
+        // Save new tokens in storage when me call was refreshed
+        if (refreshed) {
+          expires = refreshExpires
+          yield lsStoreAccessToken(accessToken)
+          yield lsStoreRefreshToken(refreshToken)
+          if (expires) {
+            yield lsStoreExpires(expires)
+          }
+        } else {
+          expires = yield lsGetExpires()
+        }
         // Save tokens and user info in redux store
-        const expires = yield lsGetExpires()
         yield put({
           type: AUTH_WITH_TOKEN_SUCCESS,
           payload: { user, accessToken, refreshToken, expires }
