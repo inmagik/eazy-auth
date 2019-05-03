@@ -1,4 +1,4 @@
-import { tokenRefreshed } from './actions'
+import { tokenRefreshed, logout } from './actions'
 
 export default function makeAuthApiCallFromStore(
   {
@@ -53,43 +53,60 @@ export default function makeAuthApiCallFromStore(
     const refreshToken = getRefreshToken()
 
     return apiFn(accessToken)(...args).catch(error => {
-      // No refresh function given throw the original error
-      if (typeof refreshTokenCall !== 'function') {
-        return Promise.reject(error)
-      }
       // refresh token and retry the call
       if (error.status === 401) {
+        // No refresh function given throw the original error
+        if (typeof refreshTokenCall !== 'function') {
+          // Log out ma men
+          store.dispatch(logout())
+          return Promise.reject(error)
+        }
         // Try refresing token...
         return refreshTokenCall(refreshToken).then(
           refresh => {
             // Re-try da call
-            return apiFn(refresh.access_token)(...args).then(result => {
-              // Notify store da refresh!
-              if (getAccessToken()) {
-                store.dispatch(
-                  tokenRefreshed({
-                    accessToken: refresh.access_token,
-                    refreshToken: refresh.refresh_token,
-                    expires: refresh.expires,
-                  })
-                )
-                // Write lo local storage!
-                lsStoreAccessToken(refresh.access_token)
-                lsStoreRefreshToken(refresh.refresh_token)
-                if (refresh.expires) {
-                  lsStoreExpires(refresh.expires)
+            return apiFn(refresh.access_token)(...args).then(
+              result => {
+                // Notify store da refresh!
+                if (getAccessToken()) {
+                  store.dispatch(
+                    tokenRefreshed({
+                      accessToken: refresh.access_token,
+                      refreshToken: refresh.refresh_token,
+                      expires: refresh.expires,
+                    })
+                  )
+                  // Write lo local storage!
+                  lsStoreAccessToken(refresh.access_token)
+                  lsStoreRefreshToken(refresh.refresh_token)
+                  if (refresh.expires) {
+                    lsStoreExpires(refresh.expires)
+                  }
                 }
+                // YEAH Go result!
+                return result
+              },
+              error => {
+                if (error.status === 401) {
+                  store.dispatch(logout())
+                } else if (error.status === 403) {
+                  store.dispatch(logout({ fromPermission: true }))
+                }
+                return Promise.reject(error)
               }
-              // YEAH Go result!
-              return result
-            })
+            )
           },
           () => {
+            // Logout ma men
+            store.dispatch(logout())
             // Fuck off if the refresh call fails throw the original 401 error
             return Promise.reject(error)
           }
         )
       } else {
+        if (error.status === 403) {
+          store.dispatch(logout({ fromPermission: true }))
+        }
         // Normal error handling
         return Promise.reject(error)
       }
