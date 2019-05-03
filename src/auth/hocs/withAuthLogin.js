@@ -1,14 +1,8 @@
 import { PureComponent, createElement } from 'react'
 import { connect } from 'react-redux'
 import hoistStatics from 'hoist-non-react-statics'
-import {
-  isLoginLoading,
-  getLoginError,
-} from '../selectors'
-import {
-  clearLoginError,
-  login,
-} from '../actions'
+import { isLoginLoading, getLoginError } from '../selectors'
+import { clearLoginError, login } from '../actions'
 
 export default function withAuthLogin(c = {}) {
   const config = {
@@ -17,10 +11,13 @@ export default function withAuthLogin(c = {}) {
     shouldClearErrorOnChange: true,
     ...c,
   }
-  const defaultCredentials = config.credentials.reduce((r, c) => ({
-    ...r,
-    [c]: '',
-  }), {})
+  const defaultCredentials = config.credentials.reduce(
+    (r, c) => ({
+      ...r,
+      [c]: '',
+    }),
+    {}
+  )
 
   return function wrapWithLogin(WrappedComponent) {
     class BaseLogin extends PureComponent {
@@ -46,7 +43,7 @@ export default function withAuthLogin(c = {}) {
           this.props.clearLoginError()
         }
         this.setState(prevState => ({
-          credentials: { ...prevState.credentials, [field]: value }
+          credentials: { ...prevState.credentials, [field]: value },
         }))
       }
 
@@ -59,8 +56,9 @@ export default function withAuthLogin(c = {}) {
           e.preventDefault()
         }
         const { credentials } = this.state
-        const isValid = Object.keys(credentials)
-          .every(c => credentials[c].trim() !== '')
+        const isValid = Object.keys(credentials).every(
+          c => credentials[c].trim() !== ''
+        )
 
         if (isValid) {
           this.props.login(credentials)
@@ -75,7 +73,7 @@ export default function withAuthLogin(c = {}) {
             [c]: {
               value: this.state.credentials[c],
               [onChangeKey]: this.makeOnCredentialChange(c),
-            }
+            },
           }
         }, {})
       }
@@ -93,10 +91,13 @@ export default function withAuthLogin(c = {}) {
       error: getLoginError(state),
       loading: isLoginLoading(state),
     })
-    const Login = connect(mapStateToProps, {
-      clearLoginError,
-      login,
-    })(BaseLogin)
+    const Login = connect(
+      mapStateToProps,
+      {
+        clearLoginError,
+        login,
+      }
+    )(BaseLogin)
 
     return hoistStatics(Login, WrappedComponent)
   }

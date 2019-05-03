@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { withExtraReducer } from '../../utils'
+import { withExtraReducer } from '../../utils/index'
 
 import recover from './recover'
 import reset from './reset'

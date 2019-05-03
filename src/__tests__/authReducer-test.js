@@ -29,7 +29,7 @@ test('yeah', () => {
     loginCall: () => Promise.resolve(TOKENS),
     meCall: () => Promise.resolve(USER),
   })
-  function *mainSaga() {
+  function* mainSaga() {
     yield fork(authFlow)
   }
   sagaMiddleware.run(mainSaga)
@@ -51,13 +51,9 @@ test('yeah', () => {
   // ])
   console.log(store.getActions())
 
-
-
-
   // expect(1 + 2).toBe(3)
   // store.dispatch(login({ u }))
 
   // .....~~~~
   // -->
-
 })

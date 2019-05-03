@@ -28,31 +28,29 @@ const AuthRoute = ({
         if (typeof redirectTest === 'function') {
           const userRedirectTo = redirectTest(auth.user)
           if (userRedirectTo) {
-            return (
-              <Redirect
-                to={userRedirectTo}
-              />
-            )
+            return <Redirect to={userRedirectTo} />
           }
         }
         // Render normal component
         return React.createElement(component, props)
       }
       // User not authenticated, redirect to login
-      const to = typeof redirectTo === 'string'
-        ? {
-          pathname: redirectTo,
-        }
-        : redirectTo
+      const to =
+        typeof redirectTo === 'string'
+          ? {
+              pathname: redirectTo,
+            }
+          : redirectTo
       return (
         <Redirect
           to={{
             ...to,
             state: {
               ...to.state,
-              referrer: (rememberReferrer && !auth.logoutFromPermission)
-                ? props.location
-                : undefined
+              referrer:
+                rememberReferrer && !auth.logoutFromPermission
+                  ? props.location
+                  : undefined,
             },
           }}
         />

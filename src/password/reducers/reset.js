@@ -7,14 +7,17 @@ import {
   RESET_PASSWORD_SENT_LOADING,
   RESET_PASSWORD_SENT_SUCCESS,
   RESET_PASSWORD_SENT_FAILURE,
-} from '../actions'
+} from '../actions/index'
 
 const defaultCheckTokenState = {
   loading: false,
   error: null,
   tokenChecked: null,
 }
-const checkToken = (prevState = defaultCheckTokenState, { type, payload, error }) => {
+const checkToken = (
+  prevState = defaultCheckTokenState,
+  { type, payload, error }
+) => {
   switch (type) {
     case RESET_PASSWORD_UNLOAD:
       return defaultCheckTokenState
@@ -46,7 +49,10 @@ const defaultSentResetState = {
   error: null,
   resetted: false,
 }
-const sentReset = (prevState = defaultSentResetState, { type, payload, error }) => {
+const sentReset = (
+  prevState = defaultSentResetState,
+  { type, payload, error }
+) => {
   switch (type) {
     case RESET_PASSWORD_UNLOAD:
       return defaultSentResetState

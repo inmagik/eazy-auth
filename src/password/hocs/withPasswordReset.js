@@ -9,12 +9,12 @@ import {
   getResetPasswordError,
   isResettingPassword,
   isPasswordResetted,
-} from '../selectors'
+} from '../selectors/index'
 import {
   unloadPasswordReset,
   checkResetPasswordToken,
   resetPassword,
-} from '../actions'
+} from '../actions/index'
 
 export default function withPasswordReset(c = {}) {
   const config = {
@@ -50,7 +50,11 @@ export default function withPasswordReset(c = {}) {
         if (e && typeof e.preventDefault === 'function') {
           e.preventDefault()
         }
-        this.props.resetPassword(this.getResetToken(), this.state.password, ...args)
+        this.props.resetPassword(
+          this.getResetToken(),
+          this.state.password,
+          ...args
+        )
       }
 
       makeOnFieldChange = field => e => {
@@ -113,11 +117,14 @@ export default function withPasswordReset(c = {}) {
       passwordResetted: isPasswordResetted(state),
       isResettingPassword: isResettingPassword(state),
     })
-    const Reset = connect(mapStateToProps, {
-      checkResetPasswordToken,
-      unloadPasswordReset,
-      resetPassword,
-    })(BaseReset)
+    const Reset = connect(
+      mapStateToProps,
+      {
+        checkResetPasswordToken,
+        unloadPasswordReset,
+        resetPassword,
+      }
+    )(BaseReset)
 
     return hoistStatics(Reset, WrappedComponent)
   }

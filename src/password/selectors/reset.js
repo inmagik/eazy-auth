@@ -1,7 +1,6 @@
 import { selectPasswordState } from './base'
 
-const selectResetPasswordState = state =>
-  selectPasswordState(state).reset
+const selectResetPasswordState = state => selectPasswordState(state).reset
 
 export const isCheckingResetPasswordToken = state =>
   selectResetPasswordState(state).check.loading

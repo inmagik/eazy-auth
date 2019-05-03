@@ -15,7 +15,7 @@ import {
   RESET_PASSWORD_SENT_LOADING,
   RESET_PASSWORD_SENT_SUCCESS,
   RESET_PASSWORD_SENT_FAILURE,
-} from './actions'
+} from './actions/index'
 
 // Make password saga
 const makePassword = ({
@@ -23,7 +23,6 @@ const makePassword = ({
   checkResetPasswordTokenCall,
   resetPasswordCall,
 }) => {
-
   function* handleRecover({ payload: { params } }) {
     yield put({ type: RECOVER_PASSWORD_LOADING })
     try {
@@ -38,13 +37,16 @@ const makePassword = ({
     yield put({ type: RESET_PASSWORD_CHECK_TOKEN_LOADING })
     try {
       yield call(checkResetPasswordTokenCall, token, ...params)
-      yield put({ type: RESET_PASSWORD_CHECK_TOKEN_SUCCESS, payload: { token } })
+      yield put({
+        type: RESET_PASSWORD_CHECK_TOKEN_SUCCESS,
+        payload: { token },
+      })
     } catch (error) {
       yield put({ type: RESET_PASSWORD_CHECK_TOKEN_FAILURE, error })
     }
   }
 
-  function *handleResetPassword({ payload: { token, password, params } }) {
+  function* handleResetPassword({ payload: { token, password, params } }) {
     yield put({ type: RESET_PASSWORD_SENT_LOADING })
     try {
       yield call(resetPasswordCall, token, password, ...params)

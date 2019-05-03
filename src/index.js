@@ -1,2 +1,2 @@
-export * from './auth'
-export * from './password'
+export * from './auth/index'
+export * from './password/index'

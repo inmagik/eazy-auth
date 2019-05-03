@@ -18,7 +18,6 @@ const GuestRoute = ({
     {...rest}
     render={props => {
       if (auth.user) {
-
         // Redirect to referrer location
         const { location } = props
         if (redirectToReferrer && location.state && location.state.referrer) {
@@ -27,29 +26,25 @@ const GuestRoute = ({
               to={
                 typeof redirectTo === 'string'
                   ? location.state.referrer
-                  // If redirectTo is an object merged the state
-                  // of location to redirect....
-                  : {
-                    ...location.state.referrer,
-                    state: {
-                      ...redirectTo.state,
-                      ...location.state.referrer.state,
+                  : // If redirectTo is an object merged the state
+                    // of location to redirect....
+                    {
+                      ...location.state.referrer,
+                      state: {
+                        ...redirectTo.state,
+                        ...location.state.referrer.state,
+                      },
                     }
-                  }
               }
             />
           )
         }
 
-        return (
-          <Redirect
-            to={redirectTo}
-          />
-        )
+        return <Redirect to={redirectTo} />
       }
 
       if (auth.authenticatingWithToken) {
-        return spinner ?  React.createElement(spinner) : null
+        return spinner ? React.createElement(spinner) : null
       }
 
       return React.createElement(component, props)

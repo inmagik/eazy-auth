@@ -10,7 +10,7 @@ export const recoverPassword = (...params) => ({
   type: RECOVER_PASSWORD,
   payload: {
     params,
-  }
+  },
 })
 
 export const unloadPasswordRecover = () => ({

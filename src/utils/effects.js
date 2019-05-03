@@ -1,6 +1,6 @@
 import { fork, cancel, take } from 'redux-saga/effects'
 // TODO: Check polyfill
-const arrayze = a => Array.isArray(a) ? a : [a]
+const arrayze = a => (Array.isArray(a) ? a : [a])
 
 const mergePatterns = (...patterns) =>
   patterns.reduce((finalPattern, pattern) => {

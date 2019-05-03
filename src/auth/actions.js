@@ -28,13 +28,17 @@ export const logout = (options = { fromPermission: false }) => ({
   type: LOGOUT,
   payload: {
     fromPermission: options.fromPermission,
-  }
+  },
 })
 
 export const TOKEN_REFRESHED = `${NS}TOKEN_REFRESHED`
-export const tokenRefreshed = ({ accessToken, refreshToken, expires = null }) => ({
+export const tokenRefreshed = ({
+  accessToken,
+  refreshToken,
+  expires = null,
+}) => ({
   type: TOKEN_REFRESHED,
-  payload: { accessToken, refreshToken, expires }
+  payload: { accessToken, refreshToken, expires },
 })
 
 export const UPDATE_USER = `${NS}UPDATE_USER`

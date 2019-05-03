@@ -1,5 +1,12 @@
-import { take, call, put, select, fork, cancel } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
+import {
+  take,
+  call,
+  put,
+  select,
+  fork,
+  cancel,
+  delay,
+} from 'redux-saga/effects'
 import {
   LOGIN,
   LOGIN_LOADING,
@@ -33,7 +40,6 @@ const makeAuth = ({
   localStorageNamespace = 'auth',
   makeErrorFromException = defaultMakeErrorFromException,
 }) => {
-
   let choosedStoageBackend
   if (typeof storageBackend === 'undefined' || storageBackend === null) {
     if (
@@ -52,7 +58,7 @@ const makeAuth = ({
   }
 
   // redux saga helpers for Stroage Backend
-  function *ls(method, ...args) {
+  function* ls(method, ...args) {
     try {
       return yield call([choosedStoageBackend, method], ...args)
     } catch (e) {
@@ -63,7 +69,7 @@ const makeAuth = ({
     }
   }
   // Get from local storage
-  function *lsGetAccessToken() {
+  function* lsGetAccessToken() {
     const rawToken = yield ls('getItem', `${localStorageNamespace}:accessToken`)
     try {
       return JSON.parse(rawToken)
@@ -71,48 +77,65 @@ const makeAuth = ({
       return null
     }
   }
-  function *lsGetRefreshToken() {
-    const rawToken = yield ls('getItem', `${localStorageNamespace}:refreshToken`)
+  function* lsGetRefreshToken() {
+    const rawToken = yield ls(
+      'getItem',
+      `${localStorageNamespace}:refreshToken`
+    )
     try {
       return JSON.parse(rawToken)
     } catch (e) {
       return null
     }
   }
-  function *lsGetExpires() {
-    const expiresAndTimestamp = yield ls('getItem', `${localStorageNamespace}:expires`)
+  function* lsGetExpires() {
+    const expiresAndTimestamp = yield ls(
+      'getItem',
+      `${localStorageNamespace}:expires`
+    )
     if (expiresAndTimestamp) {
       const timestamp = parseInt(new Date().getTime() / 1000, 10)
-      const [relativeExpires, realtiveTimestamp] = expiresAndTimestamp.split(',')
-      return parseInt(relativeExpires, 10) - (timestamp - parseInt(realtiveTimestamp, 10))
+      const [relativeExpires, realtiveTimestamp] = expiresAndTimestamp.split(
+        ','
+      )
+      return (
+        parseInt(relativeExpires, 10) -
+        (timestamp - parseInt(realtiveTimestamp, 10))
+      )
     }
     return null
   }
   // Store to local storage
-  function *lsStoreAccessToken(token) {
-    const jsonToken = typeof token === 'undefined' ? 'null' : JSON.stringify(token)
+  function* lsStoreAccessToken(token) {
+    const jsonToken =
+      typeof token === 'undefined' ? 'null' : JSON.stringify(token)
     yield ls('setItem', `${localStorageNamespace}:accessToken`, jsonToken)
   }
-  function *lsStoreRefreshToken(token) {
-    const jsonToken = typeof token === 'undefined' ? 'null' : JSON.stringify(token)
+  function* lsStoreRefreshToken(token) {
+    const jsonToken =
+      typeof token === 'undefined' ? 'null' : JSON.stringify(token)
     yield ls('setItem', `${localStorageNamespace}:refreshToken`, jsonToken)
   }
-  function *lsStoreExpires(expires) {
+  function* lsStoreExpires(expires) {
     // Store along seconds timestamp...
     const timestamp = parseInt(new Date().getTime() / 1000, 10)
-    yield ls('setItem', `${localStorageNamespace}:expires`, `${expires},${timestamp}`)
+    yield ls(
+      'setItem',
+      `${localStorageNamespace}:expires`,
+      `${expires},${timestamp}`
+    )
   }
   // Remove from local storage
-  function *lsRemoveAccessToken(token) {
+  function* lsRemoveAccessToken(token) {
     yield ls('removeItem', `${localStorageNamespace}:accessToken`)
   }
-  function *lsRemoveRefreshToken(token) {
+  function* lsRemoveRefreshToken(token) {
     yield ls('removeItem', `${localStorageNamespace}:refreshToken`)
   }
-  function *lsRemoveExpires(token) {
+  function* lsRemoveExpires(token) {
     yield ls('removeItem', `${localStorageNamespace}:expires`)
   }
-  function *lsRemoveTokens() {
+  function* lsRemoveTokens() {
     yield lsRemoveAccessToken()
     yield lsRemoveRefreshToken()
     yield lsRemoveExpires()
@@ -120,13 +143,13 @@ const makeAuth = ({
 
   // redux saga helpers for getting tokens from redux store
   const selectAuth = state => state[reduxMountPoint]
-  function *getAccessToken() {
+  function* getAccessToken() {
     return yield select(state => selectAuth(state).accessToken)
   }
-  function *getRefreshToken() {
+  function* getRefreshToken() {
     return yield select(state => selectAuth(state).refreshToken)
   }
-  function *getTokenExpires() {
+  function* getTokenExpires() {
     return yield select(state => selectAuth(state).expires)
   }
 
@@ -150,12 +173,15 @@ const makeAuth = ({
           throw error
         }
         const result = yield call(apiFn(refresh.access_token), ...args)
-        return [result, {
-          accessToken: refresh.access_token,
-          refreshToken: refresh.refresh_token,
-          expires: refresh.expires,
-          refreshed: true,
-        }]
+        return [
+          result,
+          {
+            accessToken: refresh.access_token,
+            refreshToken: refresh.refresh_token,
+            expires: refresh.expires,
+            refreshed: true,
+          },
+        ]
       } else {
         // Normal error handling
         throw error
@@ -165,11 +191,16 @@ const makeAuth = ({
 
   // make an auth api call (curry given or taken from store accessToken)
   function* authApiCall(apiFn, ...args) {
-    const accessToken =  yield getAccessToken()
-    const refreshToken =  yield getRefreshToken()
+    const accessToken = yield getAccessToken()
+    const refreshToken = yield getRefreshToken()
 
     try {
-      const [result, refresh] = yield apiCallWithRefresh(accessToken, refreshToken, apiFn, ...args)
+      const [result, refresh] = yield apiCallWithRefresh(
+        accessToken,
+        refreshToken,
+        apiFn,
+        ...args
+      )
       if (refresh && refresh.refreshed) {
         yield lsStoreAccessToken(refresh.accessToken)
         yield lsStoreRefreshToken(refresh.refreshToken)
@@ -202,7 +233,7 @@ const makeAuth = ({
         const me = token => () => meCall(token)
         const [
           user,
-          { accessToken, refreshToken, expires: refreshExpires, refreshed }
+          { accessToken, refreshToken, expires: refreshExpires, refreshed },
         ] = yield apiCallWithRefresh(lsAccessToken, lsRefreshToken, me)
 
         let expires
@@ -220,12 +251,12 @@ const makeAuth = ({
         // Save tokens and user info in redux store
         yield put({
           type: AUTH_WITH_TOKEN_SUCCESS,
-          payload: { user, accessToken, refreshToken, expires }
+          payload: { user, accessToken, refreshToken, expires },
         })
       } catch (e) {
         yield put({
           type: AUTH_WITH_TOKEN_FAILURE,
-          error: makeErrorFromException(e)
+          error: makeErrorFromException(e),
         })
         // The token was wrong...
         yield lsRemoveTokens()
@@ -279,7 +310,7 @@ const makeAuth = ({
   }
 
   // Wait expiration and try to rehresh token!
-  function *refreshOnExpirationLoop() {
+  function* refreshOnExpirationLoop() {
     while (true) {
       const expires = yield getTokenExpires()
       yield delay(1000 * expires)
@@ -293,11 +324,13 @@ const makeAuth = ({
         yield lsStoreRefreshToken(refresh.refresh_token)
         yield lsStoreExpires(refresh.expires)
         // Save in redux state
-        yield put(tokenRefreshed({
-          expires: refresh.expires,
-          accessToken: refresh.access_token,
-          refreshToken: refresh.refresh_token,
-        }))
+        yield put(
+          tokenRefreshed({
+            expires: refresh.expires,
+            accessToken: refresh.access_token,
+            refreshToken: refresh.refresh_token,
+          })
+        )
       } catch (error) {
         yield put(logout())
       }
@@ -337,6 +370,18 @@ const makeAuth = ({
       }
     }
   }
+
+  // function authApiCallFromStore(store) {
+  //   return makeAuthApiCallFromStore(store, {
+  //     meCall,
+  //     loginCall,
+  //     refreshTokenCall,
+  //     storageBackend,
+  //     reduxMountPoint,
+  //     localStorageNamespace,
+  //     makeErrorFromException
+  //   })
+  // }
 
   return {
     authFlow,

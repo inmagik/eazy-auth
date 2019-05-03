@@ -7,12 +7,7 @@ import { Route } from 'react-router-dom'
  * (needed for first time local storage auth...)
  *
  */
-const MaybeAuthRoute = ({
-  component,
-  spinner = null,
-  auth,
-  ...rest
-}) => (
+const MaybeAuthRoute = ({ component, spinner = null, auth, ...rest }) => (
   <Route
     {...rest}
     render={props => {

@@ -3,7 +3,7 @@ import {
   RECOVER_PASSWORD_LOADING,
   RECOVER_PASSWORD_SUCCESS,
   RECOVER_PASSWORD_FAILURE,
-} from '../actions'
+} from '../actions/index'
 
 const defaultState = {
   loading: false,

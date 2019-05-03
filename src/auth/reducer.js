@@ -1,4 +1,4 @@
-import { withExtraReducer } from '../utils'
+import { withExtraReducer } from '../utils/index'
 import {
   // Form login auth actions
   LOGIN_LOADING,
@@ -42,7 +42,10 @@ const initialState = {
   logoutFromPermission: false,
 }
 
-const authReducer = (previousState = initialState, { type, payload, error }) => {
+const authReducer = (
+  previousState = initialState,
+  { type, payload, error }
+) => {
   switch (type) {
     case LOGIN_LOADING:
       return {
@@ -130,7 +133,7 @@ const authReducer = (previousState = initialState, { type, payload, error }) => 
   }
 }
 
-const makeAuthReducer = (extraReducer) =>
+const makeAuthReducer = extraReducer =>
   withExtraReducer(authReducer, extraReducer)
 
 export default makeAuthReducer

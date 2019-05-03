@@ -6,15 +6,9 @@ import {
   isPasswordRecoverLoading,
   isPasswordRecovered,
   getPasswordRecoverError,
-} from '../selectors'
-import {
-  setPasswordRecoverEmail,
-  recoverPassword,
-  unloadPasswordRecover,
-} from '../actions'
-import {
-  isEmailValid,
-} from '../../utils'
+} from '../selectors/index'
+import { recoverPassword, unloadPasswordRecover } from '../actions/index'
+import { isEmailValid } from '../../utils/index'
 
 const isEmailValidMem = defaultMemoize(isEmailValid)
 
@@ -58,10 +52,13 @@ export default function withPasswordRecover() {
       recoverLoading: isPasswordRecoverLoading(state),
       recovered: isPasswordRecovered(state),
     })
-    const Recover = connect(mapStateToProps, {
-      recoverPassword,
-      unloadPasswordRecover,
-    })(BaseRecover)
+    const Recover = connect(
+      mapStateToProps,
+      {
+        recoverPassword,
+        unloadPasswordRecover,
+      }
+    )(BaseRecover)
 
     return hoistStatics(Recover, WrappedComponent)
   }

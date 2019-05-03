@@ -1,7 +1,6 @@
 import { selectPasswordState } from './base'
 
-const selectRecoverPasswordState = state =>
-  selectPasswordState(state).recover
+const selectRecoverPasswordState = state => selectPasswordState(state).recover
 
 export const getPasswordRecoverEmail = state =>
   selectRecoverPasswordState(state).email
