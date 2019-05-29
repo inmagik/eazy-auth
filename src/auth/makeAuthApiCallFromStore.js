@@ -1,5 +1,5 @@
 import { tokenRefreshed, logout } from './actions'
-import { cathError, mergeMap, map } from 'rxjs/operators'
+import { catchError, mergeMap, map } from 'rxjs/operators'
 import { isObservable, throwError, from, of } from 'rxjs'
 
 function proxyObservable($result, store, apiFn, args, {
@@ -14,7 +14,7 @@ function proxyObservable($result, store, apiFn, args, {
   lsStoreExpires,
 }) {
   return $result.pipe(
-    cathError(error => {
+    catchError(error => {
       if (error.status === 401) {
         if (typeof refreshTokenCall !== 'function') {
           // Log out ma men
@@ -50,7 +50,7 @@ function proxyObservable($result, store, apiFn, args, {
                 // YEAH Go result!
                 return of(result)
               }),
-              cathError(() => {
+              catchError(() => {
                 // The api fail again ....
                 if (error.status === 401) {
                   store.dispatch(logout())
@@ -61,7 +61,7 @@ function proxyObservable($result, store, apiFn, args, {
               })
             )
           }),
-          cathError(() => {
+          catchError(() => {
             // Fuck off if the refresh call fails throw the original 401 error
             // Logout ma men
             store.dispatch(logout())
@@ -208,6 +208,9 @@ export default function makeAuthApiCallFromStore(
   return function authApiCall(apiFn, ...args) {
     const accessToken = getAccessToken()
     const apiResult = apiFn(accessToken)(...args)
+
+    return apiResult
+    console.log(apiResult)
 
     let proxyFn
 
