@@ -1,6 +1,6 @@
 import { tokenRefreshed, logout } from './actions'
-import { catchError, mergeMap, map } from 'rxjs/operators'
-import { isObservable, throwError, from, of } from 'rxjs'
+import { catchError, mergeMap, map, exhaustMap } from 'rxjs/operators'
+import { isObservable, throwError, from, of, Subject } from 'rxjs'
 
 function proxyObservable($result, store, apiFn, args, {
   // Auth selectors
@@ -125,7 +125,7 @@ function proxyPromise(promiseResult, store, apiFn, args, {
                 if (refresh.expires) {
                   lsStoreExpires(refresh.expires)
                 }
-              } 
+              }
               // YEAH Go result!
               return result
             },
@@ -205,6 +205,37 @@ export default function makeAuthApiCallFromStore(
     }
   }
 
+  const $refreshTrigger = new Subject()
+  const $refresh = $refreshTrigger.asObservable().pipe(
+    exhaustMap(refreshToken => {
+      return from(refreshTokenCall(refreshToken)).pipe(
+        map(refresh => ({ ok: true, refresh })),
+        catchError(error => ({ ok: false, error }))
+      )
+    })
+  )
+
+  let pendingRefresh = []
+  // TODO: Take direct from store ....
+  function refreshTokenService(refreshToken) {
+    const refreshPromise = new Promise((resolve, reject) => {
+      pendingRefresh.push({ resolve, reject })
+    })
+    $refreshTrigger.next(refreshToken)
+    return refreshPromise
+  }
+
+  $refresh.subscribe(result => {
+    for (let i = 0; i < pendingRefresh.length; i++) {
+      if (result.ok) {
+        pendingRefresh[i].resolve(result.refresh)
+      } else {
+        pendingRefresh[i].reject(result.error)
+      }
+    }
+    pendingRefresh = []
+  })
+
   return function authApiCall(apiFn, ...args) {
     const accessToken = getAccessToken()
     const apiResult = apiFn(accessToken)(...args)
@@ -222,7 +253,7 @@ export default function makeAuthApiCallFromStore(
       getAccessToken,
       getRefreshToken,
       // Refresh API call
-      refreshTokenCall,
+      refreshTokenCall: refreshTokenService,
       // Storage methods
       lsStoreAccessToken,
       lsStoreRefreshToken,
