@@ -48,7 +48,7 @@ function proxyObservable($result, store, apiFn, args, {
                   }
                 }
                 // YEAH Go result!
-                return of(result)
+                return result
               }),
               catchError(() => {
                 // The api fail again ....
@@ -125,7 +125,7 @@ function proxyPromise(promiseResult, store, apiFn, args, {
                 if (refresh.expires) {
                   lsStoreExpires(refresh.expires)
                 }
-              }
+              } 
               // YEAH Go result!
               return result
             },
@@ -208,9 +208,6 @@ export default function makeAuthApiCallFromStore(
   return function authApiCall(apiFn, ...args) {
     const accessToken = getAccessToken()
     const apiResult = apiFn(accessToken)(...args)
-
-    return apiResult
-    console.log(apiResult)
 
     let proxyFn
 
