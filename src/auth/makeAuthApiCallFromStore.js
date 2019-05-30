@@ -13,6 +13,10 @@ function proxyObservable($result, store, apiFn, args, {
   lsStoreRefreshToken,
   lsStoreExpires,
 }) {
+  // Try refresing token...
+  const refreshToken = getRefreshToken()
+  // At this time access token is bad
+  const badAccessToken = getAccessToken()
   return $result.pipe(
     catchError(error => {
       if (error.status === 401) {
@@ -21,54 +25,56 @@ function proxyObservable($result, store, apiFn, args, {
           store.dispatch(logout())
           return throwError(error)
         }
-        // Try refresing token...
-        const refreshToken = getRefreshToken()
-        // At this time access token is bad
-        const badAccessToken = getAccessToken()
 
-        return from(refreshTokenCall(refreshToken)).pipe(
-          mergeMap(refresh => {
-            // Re-try da call
-            return apiFn(refresh.access_token)(...args).pipe(
-              map(result => {
-                // Notify store da refresh!
-                if (getAccessToken() === badAccessToken) {
-                  store.dispatch(
-                    tokenRefreshed({
-                      accessToken: refresh.access_token,
-                      refreshToken: refresh.refresh_token,
-                      expires: refresh.expires,
-                    })
-                  )
-                  // Write lo local storage!
-                  lsStoreAccessToken(refresh.access_token)
-                  lsStoreRefreshToken(refresh.refresh_token)
-                  if (refresh.expires) {
-                    lsStoreExpires(refresh.expires)
+        console.log('Found bad access token', badAccessToken, args)
+
+        if (getAccessToken() !== badAccessToken) {
+          return apiFn(getAccessToken())(...args).pipe(
+            map(result => {
+
+              // YEAH Go result!
+              return result
+            }),
+            catchError(() => {
+              // The api fail again ....
+              if (error.status === 401) {
+                store.dispatch(logout())
+              } else if (error.status === 403) {
+                store.dispatch(logout({ fromPermission: true }))
+              }
+              return throwError(error)
+            })
+          )
+        } else {
+          return from(refreshTokenCall(refreshToken)).pipe(
+            mergeMap(refresh => {
+              // Re-try da call
+              return apiFn(refresh.access_token)(...args).pipe(
+                map(result => {
+  
+                  // YEAH Go result!
+                  return result
+                }),
+                catchError(() => {
+                  // The api fail again ....
+                  if (error.status === 401) {
+                    store.dispatch(logout())
+                  } else if (error.status === 403) {
+                    store.dispatch(logout({ fromPermission: true }))
                   }
-                }
-                // YEAH Go result!
-                return result
-              }),
-              catchError(() => {
-                // The api fail again ....
-                if (error.status === 401) {
-                  store.dispatch(logout())
-                } else if (error.status === 403) {
-                  store.dispatch(logout({ fromPermission: true }))
-                }
-                return throwError(error)
-              })
-            )
-          }),
-          catchError(() => {
-            // Fuck off if the refresh call fails throw the original 401 error
-            // Logout ma men
-            store.dispatch(logout())
-            // Original 401
-            return throwError(error)
-          })
-        )
+                  return throwError(error)
+                })
+              )
+            }),
+            catchError(() => {
+              // Fuck off if the refresh call fails throw the original 401 error
+              // Logout ma men
+              store.dispatch(logout())
+              // Original 401
+              return throwError(error)
+            })
+          )
+        }
       } else {
         if (error.status === 403) {
           store.dispatch(logout({ fromPermission: true }))
@@ -107,25 +113,28 @@ function proxyPromise(promiseResult, store, apiFn, args, {
 
       return refreshTokenCall(refreshToken).then(
         refresh => {
+          // Notify store da refresh!ù
+          console.log('Attempt to set new token')
+          if (getAccessToken() === badAccessToken) {
+            store.dispatch(
+              tokenRefreshed({
+                accessToken: refresh.access_token,
+                refreshToken: refresh.refresh_token,
+                expires: refresh.expires,
+              })
+            )
+            console.log('New token set')
+            // Write lo local storage!
+            lsStoreAccessToken(refresh.access_token)
+            lsStoreRefreshToken(refresh.refresh_token)
+            if (refresh.expires) {
+              lsStoreExpires(refresh.expires)
+            }
+          }
           // Re-try da call
           return apiFn(refresh.access_token)(...args).then(
             result => {
-              // Notify store da refresh!
-              if (getAccessToken() === badAccessToken) {
-                store.dispatch(
-                  tokenRefreshed({
-                    accessToken: refresh.access_token,
-                    refreshToken: refresh.refresh_token,
-                    expires: refresh.expires,
-                  })
-                )
-                // Write lo local storage!
-                lsStoreAccessToken(refresh.access_token)
-                lsStoreRefreshToken(refresh.refresh_token)
-                if (refresh.expires) {
-                  lsStoreExpires(refresh.expires)
-                }
-              }
+
               // YEAH Go result!
               return result
             },
@@ -208,8 +217,28 @@ export default function makeAuthApiCallFromStore(
   const $refreshTrigger = new Subject()
   const $refresh = $refreshTrigger.asObservable().pipe(
     exhaustMap(refreshToken => {
+      console.log('in exhaust map', refreshToken)
       return from(refreshTokenCall(refreshToken)).pipe(
-        map(refresh => ({ ok: true, refresh })),
+        map(refresh => {
+          console.log('Refresh call ok, not yet set')
+          if (getAccessToken() /*=== badAccessToken*/) {
+            store.dispatch(
+              tokenRefreshed({
+                accessToken: refresh.access_token,
+                refreshToken: refresh.refresh_token,
+                expires: refresh.expires,
+              })
+            )
+            console.log('Set new access token to redux', refresh.access_token)
+            // Write lo local storage!
+            lsStoreAccessToken(refresh.access_token)
+            lsStoreRefreshToken(refresh.refresh_token)
+            if (refresh.expires) {
+              lsStoreExpires(refresh.expires)
+            }
+          }
+          return ({ ok: true, refresh })
+        }),
         catchError(error => ({ ok: false, error }))
       )
     })
@@ -238,6 +267,7 @@ export default function makeAuthApiCallFromStore(
 
   return function authApiCall(apiFn, ...args) {
     const accessToken = getAccessToken()
+    console.log('Starting request with token and args', accessToken, args)
     const apiResult = apiFn(accessToken)(...args)
 
     let proxyFn
