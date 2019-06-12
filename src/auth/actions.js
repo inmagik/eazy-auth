@@ -31,6 +31,11 @@ export const logout = (options = { fromPermission: false }) => ({
   },
 })
 
+export const TOKEN_REFRESHING = `${NS}TOKEN_REFRESHING`
+export const tokenRefreshing = () => ({
+  type: TOKEN_REFRESHING,
+})
+
 export const TOKEN_REFRESHED = `${NS}TOKEN_REFRESHED`
 export const tokenRefreshed = ({
   accessToken,

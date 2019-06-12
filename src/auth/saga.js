@@ -20,8 +20,10 @@ import {
   LOGOUT,
   logout,
   tokenRefreshed,
+  tokenRefreshing,
 } from './actions'
-import makeAuthApiCallFromStore from './makeAuthApiCallFromStore'
+// import makeAuthApiCallFromStore from './makeAuthApiCallFromStore'
+import makeAuthMiddlewareInternal from './authMiddleware'
 
 const defaultMakeErrorFromException = ex => ex
 
@@ -167,6 +169,7 @@ const makeAuth = ({
       // refresh token and retry the call
       if (error.status === 401) {
         let refresh
+        yield put(tokenRefreshing())
         try {
           refresh = yield call(refreshTokenCall, refreshToken)
         } catch (_) {
@@ -317,6 +320,7 @@ const makeAuth = ({
       yield delay(1000 * expires)
 
       const refreshToken = yield getRefreshToken()
+      yield put(tokenRefreshing())
       try {
         // Try to refresh token after waiting expiration
         const refresh = yield call(refreshTokenCall, refreshToken)
@@ -372,25 +376,38 @@ const makeAuth = ({
     }
   }
 
-  function authApiCallFromStore(store) {
-    return makeAuthApiCallFromStore(
-      {
-        meCall,
-        loginCall,
-        refreshTokenCall,
-        storageBackend,
-        reduxMountPoint,
-        localStorageNamespace,
-        makeErrorFromException,
-      },
-      store
-    )
+  function makeAuthMiddleware() {
+    return makeAuthMiddlewareInternal({
+      meCall,
+      loginCall,
+      refreshTokenCall,
+      storageBackend,
+      reduxMountPoint,
+      localStorageNamespace,
+      makeErrorFromException,
+    })
   }
+
+  // function authApiCallFromStore(store) {
+  //   return makeAuthApiCallFromStore(
+  //     {
+  //       meCall,
+  //       loginCall,
+  //       refreshTokenCall,
+  //       storageBackend,
+  //       reduxMountPoint,
+  //       localStorageNamespace,
+  //       makeErrorFromException,
+  //     },
+  //     store
+  //   )
+  // }
 
   return {
     authFlow,
     authApiCall,
-    authApiCallFromStore,
+    makeAuthMiddleware,
+    // authApiCallFromStore,
   }
 }
 

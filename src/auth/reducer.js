@@ -17,6 +17,9 @@ import {
   AUTH_WITH_TOKEN_FAILURE,
   AUTH_WITH_TOKEN_SUCCESS,
 
+  // Token refresh in place,
+  TOKEN_REFRESHING,
+
   // Token refreshed
   TOKEN_REFRESHED,
 
@@ -34,6 +37,7 @@ const initialState = {
   user: null,
   accessToken: null,
   refreshToken: null,
+  refreshing: false,
   expires: null,
   loginLoading: false,
   loginError: null,
@@ -103,9 +107,15 @@ const authReducer = (
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,
       }
+    case TOKEN_REFRESHING:
+      return {
+        ...previousState,
+        refreshing: true,
+      }
     case TOKEN_REFRESHED:
       return {
         ...previousState,
+        refreshing: false,
         expires: payload.expires,
         accessToken: payload.accessToken,
         refreshToken: payload.refreshToken,

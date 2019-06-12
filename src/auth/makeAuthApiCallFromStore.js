@@ -2,18 +2,24 @@ import { tokenRefreshed, logout } from './actions'
 import { catchError, mergeMap, map, exhaustMap } from 'rxjs/operators'
 import { isObservable, throwError, from, of, Subject } from 'rxjs'
 
-function proxyObservable($result, store, apiFn, args, {
-  // Auth selectors
-  getAccessToken,
-  getRefreshToken,
-  // Refresh API call
-  refreshTokenCall,
-  // Storage methods
-  lsStoreAccessToken,
-  lsStoreRefreshToken,
-  lsStoreExpires,
-}) {
-  // Try refresing token...
+function proxyObservable(
+  $result,
+  store,
+  apiFn,
+  args,
+  {
+    // Auth selectors
+    getAccessToken,
+    getRefreshToken,
+    // Refresh API call
+    refreshTokenCall,
+    // Storage methods
+    lsStoreAccessToken,
+    lsStoreRefreshToken,
+    lsStoreExpires,
+  }
+) {
+  // Try refreshing token...
   const refreshToken = getRefreshToken()
   // At this time access token is bad
   const badAccessToken = getAccessToken()
@@ -31,7 +37,6 @@ function proxyObservable($result, store, apiFn, args, {
         if (getAccessToken() !== badAccessToken) {
           return apiFn(getAccessToken())(...args).pipe(
             map(result => {
-
               // YEAH Go result!
               return result
             }),
@@ -51,7 +56,6 @@ function proxyObservable($result, store, apiFn, args, {
               // Re-try da call
               return apiFn(refresh.access_token)(...args).pipe(
                 map(result => {
-  
                   // YEAH Go result!
                   return result
                 }),
@@ -86,17 +90,23 @@ function proxyObservable($result, store, apiFn, args, {
   )
 }
 
-function proxyPromise(promiseResult, store, apiFn, args, {
-  // Auth selectors
-  getAccessToken,
-  getRefreshToken,
-  // Refresh API call
-  refreshTokenCall,
-  // Storage methods
-  lsStoreAccessToken,
-  lsStoreRefreshToken,
-  lsStoreExpires,
-}) {
+function proxyPromise(
+  promiseResult,
+  store,
+  apiFn,
+  args,
+  {
+    // Auth selectors
+    getAccessToken,
+    getRefreshToken,
+    // Refresh API call
+    refreshTokenCall,
+    // Storage methods
+    lsStoreAccessToken,
+    lsStoreRefreshToken,
+    lsStoreExpires,
+  }
+) {
   return promiseResult.catch(error => {
     // refresh token and retry the call
     if (error.status === 401) {
@@ -106,7 +116,7 @@ function proxyPromise(promiseResult, store, apiFn, args, {
         store.dispatch(logout())
         return Promise.reject(error)
       }
-      // Try refresing token...
+      // Try refreshing token...
       const refreshToken = getRefreshToken()
       // At this time access token is bad
       const badAccessToken = getAccessToken()
@@ -134,7 +144,6 @@ function proxyPromise(promiseResult, store, apiFn, args, {
           // Re-try da call
           return apiFn(refresh.access_token)(...args).then(
             result => {
-
               // YEAH Go result!
               return result
             },
@@ -237,7 +246,7 @@ export default function makeAuthApiCallFromStore(
               lsStoreExpires(refresh.expires)
             }
           }
-          return ({ ok: true, refresh })
+          return { ok: true, refresh }
         }),
         catchError(error => ({ ok: false, error }))
       )
