@@ -97,11 +97,13 @@ export default function makeAuthMiddleware({
       return concat(
         of(tokenRefreshing()),
         from(refreshTokenCall(refreshToken)).pipe(
-          map(refreshResponse => tokenRefreshed({
-            accessToken: refreshResponse.access_token,
-            refreshToken: refreshResponse.refresh_token,
-            expires: refreshResponse.expires,
-          })),
+          map(refreshResponse =>
+            tokenRefreshed({
+              accessToken: refreshResponse.access_token,
+              refreshToken: refreshResponse.refresh_token,
+              expires: refreshResponse.expires,
+            })
+          ),
           catchError(error => of(logout())),
           takeUntil(logout$)
         )
@@ -117,10 +119,7 @@ export default function makeAuthMiddleware({
   function waitForStoreRefreshObservable() {
     return action$.pipe(
       filter(
-        action => (
-          action.type === TOKEN_REFRESHED ||
-          action.type === LOGOUT
-        )
+        action => action.type === TOKEN_REFRESHED || action.type === LOGOUT
       ),
       take(1),
       mergeMap(action => {
@@ -261,16 +260,15 @@ export default function makeAuthMiddleware({
             if (error.status === 401) {
               // Try refresh
               return refreshOnUnauth(firstAccessToken)
-              .toPromise()
-              .then(accessToken => {
-                return apiFn(accessToken)(...args).catch(error => {
-                  unauthLogout(firstAccessToken, error)
-                  return Promise.reject(error)
+                .toPromise()
+                .then(accessToken => {
+                  return apiFn(accessToken)(...args).catch(error => {
+                    unauthLogout(accessToken, error)
+                    return Promise.reject(error)
+                  })
                 })
-              })
             }
           }
-
           // Unauthorized
           return Promise.reject(error)
         })

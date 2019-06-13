@@ -236,8 +236,7 @@ describe('authApiCallFromStore-test', () => {
 
     callAuthApiPromise(api)
     callAuthApiPromise(api)
-    callAuthApiPromise(api)
-    .then(result => {
+    callAuthApiPromise(api).then(result => {
       expect(refreshTokenCall).toHaveBeenLastCalledWith(777)
       expect(api).toHaveBeenNthCalledWith(1, 32)
       expect(api).toHaveBeenNthCalledWith(2, 32)
@@ -297,8 +296,7 @@ describe('authApiCallFromStore-test', () => {
 
     callAuthApiObservable(api).subscribe(() => {})
     callAuthApiObservable(api).subscribe(() => {})
-    callAuthApiObservable(api)
-    .subscribe(result => {
+    callAuthApiObservable(api).subscribe(result => {
       expect(refreshTokenCall).toHaveBeenLastCalledWith(777)
       expect(api).toHaveBeenNthCalledWith(1, 32)
       expect(api).toHaveBeenNthCalledWith(2, 32)
