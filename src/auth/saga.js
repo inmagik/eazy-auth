@@ -22,7 +22,6 @@ import {
   tokenRefreshed,
   tokenRefreshing,
 } from './actions'
-// import makeAuthApiCallFromStore from './makeAuthApiCallFromStore'
 import makeAuthMiddlewareInternal from './authMiddleware'
 
 const defaultMakeErrorFromException = ex => ex
@@ -388,26 +387,10 @@ const makeAuth = ({
     })
   }
 
-  // function authApiCallFromStore(store) {
-  //   return makeAuthApiCallFromStore(
-  //     {
-  //       meCall,
-  //       loginCall,
-  //       refreshTokenCall,
-  //       storageBackend,
-  //       reduxMountPoint,
-  //       localStorageNamespace,
-  //       makeErrorFromException,
-  //     },
-  //     store
-  //   )
-  // }
-
   return {
     authFlow,
     authApiCall,
     makeAuthMiddleware,
-    // authApiCallFromStore,
   }
 }
 

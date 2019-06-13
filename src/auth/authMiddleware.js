@@ -1,4 +1,4 @@
-import { Subject, concat, of, from } from 'rxjs'
+import { Subject, concat, of, from, throwError } from 'rxjs'
 import {
   filter,
   exhaustMap,
@@ -8,12 +8,12 @@ import {
   catchError,
   take,
   mergeMap,
-  throwError,
 } from 'rxjs/operators'
 import {
   LOGOUT,
   TOKEN_REFRESHED,
   BOOTSTRAP_AUTH_END,
+  logout,
   tokenRefreshed,
   tokenRefreshing,
 } from './actions'
@@ -102,7 +102,7 @@ export default function makeAuthMiddleware({
             refreshToken: refreshResponse.refresh_token,
             expires: refreshResponse.expires,
           })),
-          catchError(error => of({ type: LOGOUT })),
+          catchError(error => of(logout())),
           takeUntil(logout$)
         )
       )
@@ -175,26 +175,40 @@ export default function makeAuthMiddleware({
     return waitForStoreRefreshObservable()
   }
 
-  function stillUnauth(badAccessToken) {
+  // Logout from error
+  function unauthLogout(badAccessToken, error) {
     const { accessToken, refreshing } = selectAuth(store.getState())
 
     if (accessToken !== null && !refreshing && accessToken === badAccessToken) {
-      store.dispatch({ type: LOGOUT })
+      if (typeof error === 'object' && error.status === 401) {
+        store.dispatch(logout())
+      } else if (typeof error === 'object' && error.status === 403) {
+        store.dispatch(logout({ fromPermission: true }))
+      }
     }
   }
 
   function onObsevableError(error, apiFn, firstAccessToken, args) {
-    if (error.status === 401 && firstAccessToken !== null) {
-      return refreshOnUnauth(firstAccessToken).pipe(
-        mergeMap(accessToken => {
-          return from(apiFn(accessToken)(...args)).pipe(
-            catchError(error => {
-              stillUnauth(accessToken)
-              return throwError(error)
-            })
-          )
-        })
-      )
+    if (firstAccessToken !== null) {
+      if (typeof refreshTokenCall !== 'function') {
+        // Refresh can't be called
+        // notify logout when needed give back error
+        unauthLogout(firstAccessToken, error)
+        return throwError(error)
+      }
+      if (error.status === 401) {
+        // Try refresh
+        return refreshOnUnauth(firstAccessToken).pipe(
+          mergeMap(accessToken => {
+            return from(apiFn(accessToken)(...args)).pipe(
+              catchError(error => {
+                unauthLogout(accessToken, error)
+                return throwError(error)
+              })
+            )
+          })
+        )
+      }
     }
     return throwError(error)
   }
@@ -216,18 +230,26 @@ export default function makeAuthMiddleware({
       .toPromise()
       .then(firstAccessToken => {
         return apiFn(firstAccessToken)(...args).catch(error => {
-          // TODO: check refreshTokenCall if a function
-          // check 403 from permission...
-          if (error.status === 401 && firstAccessToken !== null) {
-            return refreshOnUnauth(firstAccessToken)
+          if (firstAccessToken !== null) {
+            if (typeof refreshTokenCall !== 'function') {
+              // Refresh can't be called
+              unauthLogout(firstAccessToken, error)
+              return Promise.reject(error)
+            }
+            if (error.status === 401) {
+              // Try refresh
+              return refreshOnUnauth(firstAccessToken)
               .toPromise()
               .then(accessToken => {
                 return apiFn(accessToken)(...args).catch(error => {
-                  stillUnauth(accessToken)
+                  unauthLogout(firstAccessToken, error)
                   return Promise.reject(error)
                 })
               })
+            }
           }
+
+          // Unauthorized
           return Promise.reject(error)
         })
       })
