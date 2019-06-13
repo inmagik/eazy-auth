@@ -279,7 +279,7 @@ export default function makeAuthMiddleware({
         const { payload } = action
         // Write lo local storage!
         lsStoreAccessToken(payload.accessToken)
-        lsStoreRefreshToken(payload.refresh_oken)
+        lsStoreRefreshToken(payload.refreshToken)
         if (payload.expires) {
           lsStoreExpires(payload.expires)
         }
