@@ -38,6 +38,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: 777,
       },
@@ -81,6 +82,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: null,
       },
@@ -123,6 +125,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: null,
       },
@@ -167,6 +170,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: 777,
       },
@@ -222,6 +226,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: 777,
       },
@@ -282,6 +287,7 @@ describe('authApiCallFromStore-test', () => {
     const mockStore = configureStore([sagaMiddleware, authMiddleware])
     const store = mockStore({
       auth: {
+        authBooted: true,
         accessToken: 32,
         refreshToken: 777,
       },

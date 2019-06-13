@@ -1,4 +1,4 @@
-import { Subject, concat, of, from, throwError } from 'rxjs'
+import { Subject, concat, of, defer, from, empty, throwError } from 'rxjs'
 import {
   filter,
   exhaustMap,
@@ -117,7 +117,10 @@ export default function makeAuthMiddleware({
   function waitForStoreRefreshObservable() {
     return action$.pipe(
       filter(
-        action => action.type === TOKEN_REFRESHED || action.type === LOGOUT
+        action => (
+          action.type === TOKEN_REFRESHED ||
+          action.type === LOGOUT
+        )
       ),
       take(1),
       mergeMap(action => {
@@ -131,20 +134,39 @@ export default function makeAuthMiddleware({
 
   // Make an Observable taht complete token or 401 simil error
   function getAccessToken() {
-    const { accessToken, refreshing } = selectAuth(store.getState())
+    const { authBooted } = selectAuth(store.getState())
 
-    // Not authenticated, complete empty
-    if (accessToken === null) {
-      return of(null)
+    // Wait eazy-auth boot ...
+    let waitBoot$
+    if (!authBooted) {
+      waitBoot$ = action$.pipe(
+        filter(action => action.type === BOOTSTRAP_AUTH_END),
+        take(1),
+        mergeMap(() => empty())
+      )
+    } else {
+      waitBoot$ = empty()
     }
 
-    // Refresh in place wait from redux
-    if (refreshing) {
-      return waitForStoreRefreshObservable()
-    }
+    return concat(
+      waitBoot$,
+      defer(() => {
+        const { accessToken, refreshing } = selectAuth(store.getState())
 
-    // Valid acces token in store!
-    return of(accessToken)
+        // Not authenticated, complete empty
+        if (accessToken === null) {
+          return of(null)
+        }
+
+        // Refresh in place wait from redux
+        if (refreshing) {
+          return waitForStoreRefreshObservable()
+        }
+
+        // Valid acces token in store!
+        return of(accessToken)
+      })
+    )
   }
 
   function refreshOnUnauth(accessToken2Refresh) {

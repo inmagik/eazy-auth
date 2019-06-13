@@ -72,12 +72,13 @@ const meCall = (token, loginData) => new Promise((resolve, reject) => {
   }, 200)
 })
 
-const { authFlow, authCall } = makeAuthFlow({
+const { authFlow, makeAuthMiddleware } = makeAuthFlow({
   makeErrorFromException: ({ data }) => data.error,
   loginCall,
   refreshTokenCall,
   meCall,
 })
+const authMiddleware = makeAuthMiddleware()
 
 function *mainSaga() {
   yield fork(authFlow)
@@ -89,10 +90,10 @@ const store = createStore(
   rootReducer,
   undefined,
   composeEnhancers(
-    applyMiddleware(sagaMiddleware),
+    applyMiddleware(sagaMiddleware, authMiddleware),
   )
 )
-
+export const { callAuthApiObservable } = authMiddleware.run()
 sagaMiddleware.run(mainSaga)
 
 export default store

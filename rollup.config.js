@@ -6,6 +6,7 @@ const vendors = []
   .concat(
     Object.keys(pkg.dependencies),
     Object.keys(pkg.peerDependencies),
+    'rxjs/operators',
     'redux-saga/effects'
   )
 

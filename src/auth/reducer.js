@@ -41,7 +41,8 @@ const initialState = {
   expires: null,
   loginLoading: false,
   loginError: null,
-  bootstrappingAuth: false,
+  bootstrappingAuth: false, // TODO <--- Remove
+  authBooted: false,
   authenticatingWithToken: false,
   logoutFromPermission: false,
 }
@@ -86,6 +87,7 @@ const authReducer = (
     case BOOTSTRAP_AUTH_END:
       return {
         ...previousState,
+        authBooted: true,
         bootstrappingAuth: false,
       }
     case AUTH_WITH_TOKEN_LOADING:
@@ -96,11 +98,13 @@ const authReducer = (
     case AUTH_WITH_TOKEN_FAILURE:
       return {
         ...previousState,
+        refreshing: false,
         authenticatingWithToken: false,
       }
     case AUTH_WITH_TOKEN_SUCCESS:
       return {
         ...previousState,
+        refreshing: false,
         authenticatingWithToken: false,
         expires: payload.expires,
         user: payload.user,
@@ -136,6 +140,7 @@ const authReducer = (
     case LOGOUT:
       return {
         ...initialState,
+        authBooted: true,
         logoutFromPermission: payload.fromPermission,
       }
     default:

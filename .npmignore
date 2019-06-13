@@ -4,6 +4,7 @@
 webpack.config.js
 rollup.config.js
 index.html
+index.js
 404.html
 /example
 /src
