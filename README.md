@@ -168,3 +168,49 @@ const App = () => (
   </Provider>
 )
 ```
+## authMiddleware
+
+`eazy-auth` was originally built with `redux-saga` in mind but in certain situation you need to hook the auth "side effects" outside the `redux-saga` environment for example directly in react components.
+
+This is why  the `authMiddleware` was created.
+
+Create auth middleware:
+
+```js
+const { authFlow, authCall, makeAuthMiddleware } = makeAuthFlow({
+  /* Normal configuration, see above */
+})
+const authMiddleware = makeAuthMiddleware()
+const sagaMiddleware = createSagaMiddleware()
+
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose
+const store = createStore(
+  rootReducer,
+  undefined,
+  composeEnhancers(
+    applyMiddleware(sagaMiddleware, authMiddleware),
+  )
+)
+// IMPORTATION run authMiddleware before the sagaMiddleware 
+export const { callAuthApiObservable, callAuthApiPromise } = authMiddleware.run()
+sagaMiddleware.run(mainSaga)
+
+export default store
+```
+
+### callAuthApiPromise(apiCall, ...args)
+
+`apiCall: (accessToken)(...args) => Promise`
+
+Curry the `accessToken` if any, logout on rejection matches `{ status: 401|403 }` and try refresh if a refresh call is given, if refresh is good re-try the `apiCall` otherwis rejects.
+
+Return a Promise.
+
+### callAuthApiObservable(apiCall, ...args)
+
+`apiCall: (accessToken)(...args) => Promise|Observable`
+
+Same as above but implement with observables.
+
+Return a Observable.
+
